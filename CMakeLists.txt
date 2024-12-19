@@ -42,6 +42,11 @@ include(ExternalProject)
 include(ProcessorCount)
 
 find_program(MAKE make REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBTASN1 libtasn1 REQUIRED)
+pkg_check_modules(LIBJASON_GLIB json-glib-1.0 REQUIRED)
+pkg_check_modules(LIBSECCOMP libseccomp REQUIRED)
+pkg_check_modules(LIBGMP gmp REQUIRED)
 
 ProcessorCount(NPROC)
 
@@ -55,8 +60,9 @@ ExternalProject_Add(libtpms
 
 ExternalProject_Add(swtpm
     SOURCE_DIR ${swtpm_SOURCE_DIR}
-    CONFIGURE_COMMAND ${swtpm_SOURCE_DIR}/autogen.sh
-                        --disable-tests
-                        --with-openssl
-                        --prefix=$ENV{MIX_APP_PATH}/priv
+    CONFIGURE_COMMAND PKG_CONFIG_PATH=$ENV{MIX_APP_PATH}/priv/lib/pkgconfig
+                        ${swtpm_SOURCE_DIR}/autogen.sh
+                          --disable-tests
+                          --with-openssl
+                          --prefix=$ENV{MIX_APP_PATH}/priv
     BUILD_COMMAND ${MAKE} -j ${NPROC})
