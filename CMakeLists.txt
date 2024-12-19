@@ -45,8 +45,11 @@ find_program(MAKE make REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBTASN1 libtasn1 REQUIRED)
 pkg_check_modules(LIBJASON_GLIB json-glib-1.0 REQUIRED)
-pkg_check_modules(LIBSECCOMP libseccomp REQUIRED)
 pkg_check_modules(LIBGMP gmp REQUIRED)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    pkg_check_modules(LIBSECCOMP libseccomp REQUIRED)
+endif()
 
 ProcessorCount(NPROC)
 
