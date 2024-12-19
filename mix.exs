@@ -28,7 +28,7 @@ defmodule SWTPM.MixProject do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
     ]
   end
 
@@ -38,7 +38,7 @@ defmodule SWTPM.MixProject do
       cookie: "#{@app}_cookie",
       include_erts: &Nerves.Release.erts/0,
       steps: [&Nerves.Release.init/1, :assemble],
-      strip_beams: Mix.env() == :prod or [keep: ["Docs"]]
+      strip_beams: Mix.env() == :prod or [keep: ["Docs"]],
     ]
   end
 
@@ -68,7 +68,7 @@ defmodule SWTPM.MixProject do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md"]
+      extras: ["README.md"],
     ]
   end
 
