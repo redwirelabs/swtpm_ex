@@ -12,3 +12,60 @@ if(NOT EXISTS ${CPM_PATH})
     file(DOWNLOAD ${CPM_RELEASE_URL} ${CPM_PATH})
 endif()
 include(${CPM_PATH})
+
+# dependencies
+set(LIBTPMS_VER v0.10.0)
+set(SWTPM_VER   v0.10.0)
+
+if(DEFINED ENV{LIBTPMS_VER})
+    set(LIBTPMS_VER $ENV{LIBTPMS_VER})
+endif()
+
+if(DEFINED ENV{SWTPM_VER})
+    set(SWTPM_VER $ENV{SWTPM_VER})
+endif()
+
+CPMFindPackage(
+    NAME libtpms
+    GITHUB_REPOSITORY stefanberger/libtpms
+    GIT_TAG ${LIBTPMS_VER})
+
+CPMFindPackage(
+    NAME swtpm
+    GITHUB_REPOSITORY stefanberger/swtpm
+    GIT_TAG ${SWTPM_VER})
+
+# build
+project(swtpm_ex)
+
+include(ExternalProject)
+include(ProcessorCount)
+
+find_program(MAKE make REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBTASN1 libtasn1 REQUIRED)
+pkg_check_modules(LIBJASON_GLIB json-glib-1.0 REQUIRED)
+pkg_check_modules(LIBGMP gmp REQUIRED)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    pkg_check_modules(LIBSECCOMP libseccomp REQUIRED)
+endif()
+
+ProcessorCount(NPROC)
+
+ExternalProject_Add(libtpms
+    SOURCE_DIR ${libtpms_SOURCE_DIR}
+    CONFIGURE_COMMAND ${libtpms_SOURCE_DIR}/autogen.sh
+                        --with-tpm2
+                        --with-openssl
+                        --prefix=$ENV{MIX_APP_PATH}/priv
+    BUILD_COMMAND ${MAKE} -j ${NPROC})
+
+ExternalProject_Add(swtpm
+    SOURCE_DIR ${swtpm_SOURCE_DIR}
+    CONFIGURE_COMMAND PKG_CONFIG_PATH=$ENV{MIX_APP_PATH}/priv/lib/pkgconfig
+                        ${swtpm_SOURCE_DIR}/autogen.sh
+                          --disable-tests
+                          --with-openssl
+                          --prefix=$ENV{MIX_APP_PATH}/priv
+    BUILD_COMMAND ${MAKE} -j ${NPROC})
