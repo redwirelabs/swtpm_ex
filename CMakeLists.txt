@@ -61,11 +61,19 @@ ExternalProject_Add(libtpms
                         --prefix=$ENV{MIX_APP_PATH}/priv
     BUILD_COMMAND ${MAKE} -j ${NPROC})
 
+set(SWTPM_CONF_OPTS
+    --prefix=$ENV{MIX_APP_PATH}/priv
+    --disable-tests
+    --with-openssl)
+
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    list(APPEND SWTPM_CONF_OPTS --without-cuse)
+endif()
+
+set(SWTPM_CONF_ENV PKG_CONFIG_PATH=$ENV{MIX_APP_PATH}/priv/lib/pkgconfig)
+
 ExternalProject_Add(swtpm
     SOURCE_DIR ${swtpm_SOURCE_DIR}
-    CONFIGURE_COMMAND PKG_CONFIG_PATH=$ENV{MIX_APP_PATH}/priv/lib/pkgconfig
-                        ${swtpm_SOURCE_DIR}/autogen.sh
-                          --disable-tests
-                          --with-openssl
-                          --prefix=$ENV{MIX_APP_PATH}/priv
+    CONFIGURE_COMMAND
+        ${SWTPM_CONF_ENV} ${swtpm_SOURCE_DIR}/autogen.sh ${SWTPM_CONF_OPTS}
     BUILD_COMMAND ${MAKE} -j ${NPROC})
